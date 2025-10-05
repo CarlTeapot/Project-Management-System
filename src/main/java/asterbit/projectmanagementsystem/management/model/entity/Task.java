@@ -34,7 +34,32 @@ public class Task {
 
     private LocalDateTime dueDate;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id", nullable = false)
+    private Project project;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_user_id")
+    private User assignedUser;
+
     private LocalDateTime createDate;
 
     private LocalDateTime updateDate;
+
+    @PrePersist
+    protected void onCreate() {
+        createDate = LocalDateTime.now();
+        updateDate = createDate;
+        if (status == null) {
+            status = Status.TODO;
+        }
+        if (priority == null) {
+            priority = Priority.MEDIUM;
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updateDate = LocalDateTime.now();
+    }
 }
