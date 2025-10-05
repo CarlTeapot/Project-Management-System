@@ -26,7 +26,6 @@ public class ProjectController {
     public ResponseEntity<Void> create(@RequestBody ProjectCreationRequest request, @AuthenticationPrincipal PrincipalDetails principal) {
 
         projectService.create(request, principal);
-
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

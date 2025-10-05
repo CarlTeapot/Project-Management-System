@@ -32,6 +32,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("io.swagger.core.v3:swagger-annotations:2.2.38")
     implementation("com.auth0:java-jwt:4.5.0")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
+    implementation("org.mapstruct:mapstruct:1.6.3")
     compileOnly("org.projectlombok:lombok")
     runtimeOnly("org.postgresql:postgresql")
     developmentOnly("org.springframework.boot:spring-boot-docker-compose")
