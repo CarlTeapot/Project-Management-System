@@ -4,9 +4,9 @@ import asterbit.projectmanagementsystem.authentication.model.request.LoginReques
 import asterbit.projectmanagementsystem.authentication.model.request.RegistrationRequest;
 import asterbit.projectmanagementsystem.authentication.model.response.AuthorizationResponse;
 import asterbit.projectmanagementsystem.authentication.service.AuthenticationService;
-import asterbit.projectmanagementsystem.management.model.entity.User;
-import asterbit.projectmanagementsystem.management.model.enums.Role;
-import asterbit.projectmanagementsystem.management.repository.UserRepository;
+import asterbit.projectmanagementsystem.management.user.model.entity.User;
+import asterbit.projectmanagementsystem.management.user.model.enums.Role;
+import asterbit.projectmanagementsystem.management.user.repository.UserRepository;
 import asterbit.projectmanagementsystem.security.service.JwtGeneratorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -40,16 +40,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new IllegalArgumentException("User with email " + email + " already exists");
         }
 
-        User user = new User();
-        user.setEmail(email);
-        user.setPassword(encoder.encode(request.password()));
-        user.setRole(Role.USER);
-        user.setCreateDate(LocalDateTime.now());
-        user.setUpdateDate(LocalDateTime.now());
+        User user = User.builder()
+                .publicId(java.util.UUID.randomUUID())
+                .email(email)
+                .password(encoder.encode(request.password()))
+                .role(Role.USER)
+                .createDate(LocalDateTime.now())
+                .updateDate(LocalDateTime.now())
+                .build();
 
         User saved = userRepository.save(user);
 
-        String token = jwtGeneratorService.generateToken(saved.getEmail(), saved.getRole());
+        String token = jwtGeneratorService.generateToken(saved.getPublicId(), saved.getRole());
         return new AuthorizationResponse(
                 token,
                 jwtGeneratorService.getExpirationMinutes()
@@ -75,7 +77,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new IllegalArgumentException("Invalid password");
         }
 
-        String token = jwtGeneratorService.generateToken(user.getEmail(), user.getRole());
+        String token = jwtGeneratorService.generateToken(user.getPublicId(), user.getRole());
 
         return new AuthorizationResponse(
                 token,

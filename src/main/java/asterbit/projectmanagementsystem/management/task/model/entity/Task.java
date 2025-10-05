@@ -1,8 +1,10 @@
-package asterbit.projectmanagementsystem.management.model.entity;
+package asterbit.projectmanagementsystem.management.task.model.entity;
 
 
-import asterbit.projectmanagementsystem.management.model.enums.Priority;
-import asterbit.projectmanagementsystem.management.model.enums.Status;
+import asterbit.projectmanagementsystem.management.project.model.entity.Project;
+import asterbit.projectmanagementsystem.management.task.model.enums.Status;
+import asterbit.projectmanagementsystem.management.task.model.enums.TaskPriority;
+import asterbit.projectmanagementsystem.management.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,7 +32,7 @@ public class Task {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Priority priority;
+    private TaskPriority taskPriority;
 
     private LocalDateTime dueDate;
 
@@ -53,8 +55,8 @@ public class Task {
         if (status == null) {
             status = Status.TODO;
         }
-        if (priority == null) {
-            priority = Priority.MEDIUM;
+        if (taskPriority == null) {
+            taskPriority = TaskPriority.MEDIUM;
         }
     }
 

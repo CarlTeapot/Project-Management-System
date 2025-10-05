@@ -1,7 +1,7 @@
-package asterbit.projectmanagementsystem.management.model.entity;
+package asterbit.projectmanagementsystem.management.project.model.entity;
 
-import asterbit.projectmanagementsystem.management.model.enums.ProjectRole;
-import asterbit.projectmanagementsystem.management.model.enums.Role;
+import asterbit.projectmanagementsystem.management.project.model.enums.ProjectRole;
+import asterbit.projectmanagementsystem.management.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

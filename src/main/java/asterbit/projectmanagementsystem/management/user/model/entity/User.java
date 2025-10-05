@@ -1,15 +1,21 @@
-package asterbit.projectmanagementsystem.management.model.entity;
+package asterbit.projectmanagementsystem.management.user.model.entity;
 
-import asterbit.projectmanagementsystem.management.model.enums.Role;
+import asterbit.projectmanagementsystem.management.user.model.enums.Role;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "users")
+@Builder
+@AllArgsConstructor
 public class User {
 
     @Id
@@ -18,6 +24,9 @@ public class User {
 
     @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(nullable = false, unique = true, updatable = false)
+    private UUID publicId;
 
     @Column(nullable = false)
     private String password;
@@ -29,4 +38,8 @@ public class User {
     private LocalDateTime createDate;
 
     private LocalDateTime updateDate;
+
+    public User() {
+
+    }
 }

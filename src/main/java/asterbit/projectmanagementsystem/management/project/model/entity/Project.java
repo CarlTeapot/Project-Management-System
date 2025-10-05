@@ -1,6 +1,8 @@
-package asterbit.projectmanagementsystem.management.model.entity;
+package asterbit.projectmanagementsystem.management.project.model.entity;
 
 
+import asterbit.projectmanagementsystem.management.task.model.entity.Task;
+import asterbit.projectmanagementsystem.management.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

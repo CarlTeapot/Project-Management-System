@@ -1,0 +1,104 @@
+package asterbit.projectmanagementsystem.management.project.service.impl;
+
+import asterbit.projectmanagementsystem.management.project.model.dto.ProjectDTO;
+import asterbit.projectmanagementsystem.management.project.model.entity.Project;
+import asterbit.projectmanagementsystem.management.project.model.entity.ProjectMember;
+import asterbit.projectmanagementsystem.management.project.model.enums.ProjectRole;
+import asterbit.projectmanagementsystem.management.project.model.request.ProjectCreationRequest;
+import asterbit.projectmanagementsystem.management.project.repository.ProjectRepository;
+import asterbit.projectmanagementsystem.management.project.repository.ProjectMemberRepository;
+import asterbit.projectmanagementsystem.management.user.model.entity.User;
+import asterbit.projectmanagementsystem.management.user.model.enums.Role;
+import asterbit.projectmanagementsystem.management.user.repository.UserRepository;
+import asterbit.projectmanagementsystem.management.project.service.ProjectService;
+import asterbit.projectmanagementsystem.security.model.PrincipalDetails;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+public class ProjectServiceImpl implements ProjectService {
+
+    private final ProjectRepository projectRepository;
+    private final UserRepository userRepository;
+    private final ProjectMemberRepository projectMemberRepository;
+
+    @Override
+    @Transactional
+    public void create(ProjectCreationRequest projectRequest, PrincipalDetails details) {
+
+        User owner = userRepository.findByPublicId(details.publicId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + details.publicId()));
+
+        Project project = new Project();
+        project.setManager(owner);
+        project.setName(projectRequest.name());
+        project.setDescription(projectRequest.description());
+        project.setCreateDate(LocalDateTime.now());
+        project.setUpdateDate(LocalDateTime.now());
+
+        Project saved = projectRepository.save(project);
+
+        var pm = new ProjectMember();
+        pm.setProject(saved);
+        pm.setUser(owner);
+        pm.setRole(ProjectRole.MANAGER);
+        projectMemberRepository.save(pm);
+
+    }
+
+
+    @Override
+    public ProjectDTO getByPublicId(String publicId) {
+        Project project = projectRepository.findByPublicId(java.util.UUID.fromString(publicId))
+                .orElseThrow(() -> new IllegalArgumentException("Project not found: " + publicId));
+        return new ProjectDTO(project.getId(), project.getName(), project.getDescription(), project.getManager().getId());
+    }
+
+    @Override
+    @Transactional
+    public ProjectDTO update(String publicId, ProjectDTO updates, PrincipalDetails details) {
+        Project project = projectRepository.findByPublicId(java.util.UUID.fromString(publicId))
+                .orElseThrow(() -> new IllegalArgumentException("Project not found: " + publicId));
+
+        User user = userRepository.findByPublicId(details.publicId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + details.publicId()));
+
+        if (!project.getManager().getId().equals(user.getId()) && details.role() != Role.ADMIN) {
+            throw new SecurityException("Only the project manager or an admin can update the project.");
+        }
+
+        if (updates.name() != null) project.setName(updates.name());
+        if (updates.description() != null) project.setDescription(updates.description());
+        project.setUpdateDate(java.time.LocalDateTime.now());
+
+        Project saved = projectRepository.save(project);
+        return new ProjectDTO(saved.getId(), saved.getName(), saved.getDescription(), saved.getManager().getId());
+    }
+
+    @Override
+    public void delete(String projectPublicId, PrincipalDetails details) {
+
+        Project project = projectRepository.findByPublicId(UUID.fromString(projectPublicId))
+                .orElseThrow(() -> new IllegalArgumentException("Project not found: " + projectPublicId));
+
+        User user = userRepository.findByPublicId(details.publicId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + details.publicId()));
+
+        ProjectMember requester = projectMemberRepository.findByProjectAndUser(project, user)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + details.publicId()));
+
+        if (!project.getManager().getId().equals(requester.getId()) && !details.role().equals(Role.ADMIN)) {
+            throw new SecurityException("Only the project manager or an admin can delete the project.");
+        }
+
+        projectRepository.delete(project);
+    }
+
+}
+
+

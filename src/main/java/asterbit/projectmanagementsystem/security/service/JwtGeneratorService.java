@@ -1,6 +1,6 @@
 package asterbit.projectmanagementsystem.security.service;
 
-import asterbit.projectmanagementsystem.management.model.enums.Role;
+import asterbit.projectmanagementsystem.management.user.model.enums.Role;
 import asterbit.projectmanagementsystem.security.config.JwtConfigurationProperties;
 import asterbit.projectmanagementsystem.security.exception.JwtValidationException;
 import com.auth0.jwt.JWT;
@@ -8,7 +8,6 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.*;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -53,21 +52,17 @@ public class JwtGeneratorService {
     /**
      * Generates a JWT token for the given username and roles
      *
-     * @param email the subject of the token
+     * @param publicId the subject of the token
      * @param role user global role (e.g. admin, user)
      * @return signed JWT token
      */
-    public String generateToken(String email, Role role) {
-        if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("Username cannot be null or blank");
-        }
-
+    public String generateToken(UUID publicId, Role role) {
         Instant now = Instant.now();
         Instant expiration = now.plusMillis(expirationMillis);
 
         String token = JWT.create()
                 .withJWTId(UUID.randomUUID().toString())
-                .withSubject(email)
+                .withSubject(publicId.toString())
                 .withIssuer(issuer)
                 .withAudience(audience)
                 .withClaim(ROLES_CLAIM, role.toString())
@@ -75,7 +70,7 @@ public class JwtGeneratorService {
                 .withExpiresAt(expiration)
                 .sign(algorithm);
 
-        log.debug("Generated token for user: {}, expires at: {}", email, expiration);
+        log.debug("Generated token for user: {}, expires at: {}", publicId , expiration);
         return token;
     }
 
@@ -114,23 +109,10 @@ public class JwtGeneratorService {
     }
 
     /**
-     * Extracts username from token without full validation
-     * Use only for non-security-critical operations
-     */
-    public String extractUsername(String token) {
-        try {
-            return JWT.decode(token).getSubject();
-        } catch (JWTDecodeException e) {
-            log.error("Failed to decode token: {}", e.getMessage());
-            return null;
-        }
-    }
-
-    /**
      * Extracts roles from a validated JWT
      */
-    public List<String> extractRoles(DecodedJWT jwt) {
-        return jwt.getClaim(ROLES_CLAIM).asList(String.class);
+    public List<Role> extractRoles(DecodedJWT jwt) {
+        return jwt.getClaim(ROLES_CLAIM).asList(Role.class);
     }
 
     public String getExpirationMinutes() {

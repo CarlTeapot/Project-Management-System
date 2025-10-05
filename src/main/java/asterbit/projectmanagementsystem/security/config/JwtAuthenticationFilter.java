@@ -1,6 +1,8 @@
 package asterbit.projectmanagementsystem.security.config;
 
+import asterbit.projectmanagementsystem.management.user.model.enums.Role;
 import asterbit.projectmanagementsystem.security.exception.JwtValidationException;
+import asterbit.projectmanagementsystem.security.model.PrincipalDetails;
 import asterbit.projectmanagementsystem.security.service.JwtGeneratorService;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import jakarta.servlet.FilterChain;
@@ -19,6 +21,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * JWT Authentication Filter that processes JWT tokens from the Authorization header.
@@ -93,21 +96,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private void authenticateUser(String token, HttpServletRequest request) {
         DecodedJWT jwt = jwtService.validateToken(token);
-        String username = jwt.getSubject();
-        List<String> roles = jwtService.extractRoles(jwt);
+        String publicId = jwt.getSubject();
+        List<Role> roles = jwtService.extractRoles(jwt);
 
         List<SimpleGrantedAuthority> authorities = roles.stream()
-                .map(role -> new SimpleGrantedAuthority(ensureRolePrefix(role)))
+                .map(role -> new SimpleGrantedAuthority(ensureRolePrefix(role.toString())))
                 .toList();
 
+        PrincipalDetails principal =
+                new PrincipalDetails(
+                        UUID.fromString(publicId),
+                        roles.isEmpty() ? null : roles.get(0)
+                );
+
         UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(username, null, authorities);
+                new UsernamePasswordAuthenticationToken(principal, null, authorities);
 
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        log.debug("Successfully authenticated user: {} with roles: {}", username, roles);
+        log.debug("Successfully authenticated user: {} with roles: {}", publicId, roles);
     }
 
     private String ensureRolePrefix(String role) {

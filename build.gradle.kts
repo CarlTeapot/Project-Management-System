@@ -2,9 +2,7 @@ plugins {
     java
     id("org.springframework.boot") version "3.5.6"
     id("io.spring.dependency-management") version "1.1.7"
-    id("io.gitlab.arturbosch.detekt").version("1.23.6")
     kotlin("jvm") version "1.9.23"
-    kotlin("plugin.spring") version "1.9.23"
 }
 
 group = "asterbit"
@@ -45,9 +43,4 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
-}
-
-detekt {
-    buildUponDefaultConfig = true
-    config.setFrom("detekt-config.yml")
 }
