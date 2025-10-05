@@ -3,7 +3,8 @@ plugins {
     id("org.springframework.boot") version "3.5.6"
     id("io.spring.dependency-management") version "1.1.7"
     id("io.gitlab.arturbosch.detekt").version("1.23.6")
-    kotlin("jvm")
+    kotlin("jvm") version "1.9.23"
+    kotlin("plugin.spring") version "1.9.23"
 }
 
 group = "asterbit"
@@ -31,14 +32,15 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("io.swagger.core.v3:swagger-annotations:2.2.38")
     implementation("com.auth0:java-jwt:4.5.0")
     compileOnly("org.projectlombok:lombok")
     runtimeOnly("org.postgresql:postgresql")
+    developmentOnly("org.springframework.boot:spring-boot-docker-compose")
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    implementation(kotlin("stdlib-jdk8"))
 }
 
 tasks.withType<Test> {

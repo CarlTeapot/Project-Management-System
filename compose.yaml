@@ -1,0 +1,10 @@
+services:
+  postgres:
+    image: 'postgres:latest'
+    container_name: asterbit_postgres_container
+    environment:
+      - 'POSTGRES_DB=asterbit_db'
+      - 'POSTGRES_PASSWORD=asterbit'
+      - 'POSTGRES_USER=root'
+    ports:
+      - '5452:5432'
