@@ -126,7 +126,23 @@ java -jar build/libs/project-management-system-0.0.1-SNAPSHOT.jar
 
 - Swagger UI: `http://localhost:8081/swagger-ui.html`
 
-### Manual Tests (Shell Scripts)
+### API Testing
+
+#### Postman Collection
+
+Import the Postman collection from `postman/Project-Management-System.postman_collection.json`:
+
+1. Open Postman
+2. Click "Import" → "Upload Files"
+3. Select `postman/Project-Management-System.postman_collection.json`
+4. The collection includes:
+   - Authentication endpoints (register/login with auto JWT token extraction)
+   - Project CRUD operations
+   - Task management with pagination and filters
+   - Invitation system (send/accept/decline)
+   - Pre-configured variables and bearer token authentication
+
+#### Manual Tests (Shell Scripts)
 
 See `manual_tests/` for ready-made curl scripts:
 If you don't have mac or linux, you can use git bash on windows to run these scripts.
