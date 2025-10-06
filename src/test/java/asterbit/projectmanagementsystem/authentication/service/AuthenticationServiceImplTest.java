@@ -5,6 +5,7 @@ import asterbit.projectmanagementsystem.authentication.model.request.Registratio
 import asterbit.projectmanagementsystem.authentication.model.response.AuthorizationResponse;
 import asterbit.projectmanagementsystem.authentication.service.impl.AuthenticationServiceImpl;
 import asterbit.projectmanagementsystem.management.invitation.model.enums.InvitationStatus;
+import asterbit.projectmanagementsystem.management.invitation.model.mapper.InvitationMapper;
 import asterbit.projectmanagementsystem.management.invitation.repository.InvitationRepository;
 import asterbit.projectmanagementsystem.management.user.model.entity.User;
 import asterbit.projectmanagementsystem.management.user.model.enums.Role;
@@ -34,7 +35,7 @@ class AuthenticationServiceImplTest {
     @Mock private BCryptPasswordEncoder encoder;
     @Mock private JwtGeneratorService jwtGeneratorService;
     @Mock private InvitationRepository invitationRepository;
-
+    @Mock private InvitationMapper invitationMapper;
     @InjectMocks private AuthenticationServiceImpl service;
 
     @Test
