@@ -120,4 +120,23 @@ class InvitationServiceImplTest {
         assertThat(inv.getStatus()).isEqualTo(InvitationStatus.DECLINED);
         verify(invitationRepository).save(inv);
     }
+
+    @Test
+    void declineInvitation_throwsIfNotPending() {
+        UUID projectPublicId = UUID.randomUUID();
+        Project project = new Project();
+        User user = User.builder().id(2L).role(Role.USER).build();
+        ProjectInvitation inv = new ProjectInvitation();
+        inv.setProject(project);
+        inv.setUser(user);
+        inv.setStatus(InvitationStatus.ACCEPTED);
+
+        when(projectRepository.findByPublicId(projectPublicId)).thenReturn(Optional.of(project));
+        when(userRepository.findByPublicId(any())).thenReturn(Optional.of(user));
+        when(invitationRepository.findByProjectAndUser(project, user)).thenReturn(Optional.of(inv));
+
+        assertThrows(IllegalArgumentException.class, () ->
+                service.declineInvitation(projectPublicId, new PrincipalDetails(UUID.randomUUID(), Role.USER)));
+        verify(invitationRepository, never()).save(any());
+    }
 }
