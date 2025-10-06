@@ -23,5 +23,3 @@ public interface TaskService {
                                 Pageable pageable,
                                 PrincipalDetails principal);
 }
-
-
