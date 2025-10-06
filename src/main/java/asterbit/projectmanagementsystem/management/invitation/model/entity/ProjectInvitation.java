@@ -46,4 +46,3 @@ public class ProjectInvitation {
         updateDate = LocalDateTime.now();
     }
 }
-

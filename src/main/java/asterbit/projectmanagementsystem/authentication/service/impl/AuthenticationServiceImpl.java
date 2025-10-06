@@ -4,6 +4,11 @@ import asterbit.projectmanagementsystem.authentication.model.request.LoginReques
 import asterbit.projectmanagementsystem.authentication.model.request.RegistrationRequest;
 import asterbit.projectmanagementsystem.authentication.model.response.AuthorizationResponse;
 import asterbit.projectmanagementsystem.authentication.service.AuthenticationService;
+import asterbit.projectmanagementsystem.management.invitation.model.dto.InvitationDTO;
+import asterbit.projectmanagementsystem.management.invitation.model.entity.ProjectInvitation;
+import asterbit.projectmanagementsystem.management.invitation.model.enums.InvitationStatus;
+import asterbit.projectmanagementsystem.management.invitation.model.mapper.InvitationMapper;
+import asterbit.projectmanagementsystem.management.invitation.repository.InvitationRepository;
 import asterbit.projectmanagementsystem.management.user.model.entity.User;
 import asterbit.projectmanagementsystem.management.user.model.enums.Role;
 import asterbit.projectmanagementsystem.management.user.repository.UserRepository;
@@ -13,6 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -22,6 +28,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder encoder;
     private final JwtGeneratorService jwtGeneratorService;
+    private final InvitationRepository invitationRepository;
+    private final InvitationMapper invitationMapper;
 
     @Override
     public AuthorizationResponse register(RegistrationRequest request) {
@@ -54,7 +62,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String token = jwtGeneratorService.generateToken(saved.getPublicId(), saved.getRole());
         return new AuthorizationResponse(
                 token,
-                jwtGeneratorService.getExpirationMinutes()
+                jwtGeneratorService.getExpirationMinutes(),
+                null
         );
     }
 
@@ -79,9 +88,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         String token = jwtGeneratorService.generateToken(user.getPublicId(), user.getRole());
 
+        List<ProjectInvitation> invitations = invitationRepository.findAllByUserAndStatus(user, InvitationStatus.PENDING);
+
+        List<InvitationDTO> invitationDTOs = invitations.stream().map(invitationMapper::toDto
+        ).toList();
+
         return new AuthorizationResponse(
                 token,
-                jwtGeneratorService.getExpirationMinutes()
+                jwtGeneratorService.getExpirationMinutes(),
+                invitationDTOs
         );
     }
 }

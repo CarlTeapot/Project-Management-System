@@ -24,7 +24,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -66,11 +65,9 @@ public class TaskServiceImpl implements TaskService {
                 .orElseThrow(() -> new IllegalArgumentException("Assignee not found: " + request.assignedUserEmail()));
         task.setAssignedUser(assignee);
 
-        ProjectMember member = new ProjectMember();
-        member.setProject(project);
-        member.setUser(assignee);
-        member.setRole(ProjectRole.COLLABORATOR);
-        member.setJoinedDate(LocalDateTime.now());
+        ProjectMember member = projectMemberRepository.findByProjectAndUser(project, assignee).orElseThrow(
+                () -> new IllegalArgumentException("Assigned user is not a member of the project: " + request.assignedUserEmail())
+        );
 
         Task saved = taskRepository.save(task);
         projectMemberRepository.save(member);
