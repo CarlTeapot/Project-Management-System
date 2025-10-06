@@ -1,6 +1,7 @@
 package asterbit.projectmanagementsystem.management.task.service;
 
 import asterbit.projectmanagementsystem.management.project.model.entity.Project;
+import asterbit.projectmanagementsystem.management.project.model.entity.ProjectMember;
 import asterbit.projectmanagementsystem.management.project.model.enums.ProjectRole;
 import asterbit.projectmanagementsystem.management.project.repository.ProjectMemberRepository;
 import asterbit.projectmanagementsystem.management.project.repository.ProjectRepository;
@@ -44,15 +45,21 @@ class TaskServiceImplTest {
         PrincipalDetails principal = new PrincipalDetails(UUID.randomUUID(), Role.USER);
         Project project = new Project();
         User manager = User.builder().id(10L).role(Role.USER).build();
+        project.setManager(manager);
+        User assignee = User.builder().id(2L).email("e@x.com").build();
 
+        ProjectMember member = new ProjectMember();
+        member.setProject(project);
+        member.setUser(assignee);
+        member.setRole(ProjectRole.COLLABORATOR);
         when(projectRepository.findByPublicId(UUID.fromString(publicId))).thenReturn(Optional.of(project));
         when(userRepository.findByPublicId(principal.publicId())).thenReturn(Optional.of(manager));
         when(projectMemberRepository.existsByProjectAndUserAndRole(project, manager, ProjectRole.MANAGER)).thenReturn(true);
-        when(userRepository.findByEmail("e@x.com")).thenReturn(Optional.of(User.builder().id(2L).build()));
+        when(projectMemberRepository.findByProjectAndUser(project, assignee)).thenReturn(Optional.of(member));
+        when(userRepository.findByEmail(assignee.getEmail())).thenReturn(Optional.of(assignee));
         when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
         when(taskMapper.toDto(any(Task.class))).thenReturn(new TaskDTO(UUID.randomUUID(), "t", "d", null, null, null, null, null));
-
-        TaskCreateRequest req = new TaskCreateRequest("t", "d", null, null, "e@x.com");
+        TaskCreateRequest req = new TaskCreateRequest("t", "d", null, null, assignee.getEmail());
         TaskDTO dto = service.create(publicId, req, principal);
 
         assertThat(dto).isNotNull();

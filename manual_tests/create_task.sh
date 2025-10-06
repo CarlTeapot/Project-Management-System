@@ -14,7 +14,7 @@ curl -X POST "http://localhost:8081/api/projects/$PROJECT_ID/tasks" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
-    "title": "New Task3",
+    "title": "New Task1",
     "description": "Example task description",
     "taskPriority": "MEDIUM",
     "dueDate": "2025-12-31T23:59:59",

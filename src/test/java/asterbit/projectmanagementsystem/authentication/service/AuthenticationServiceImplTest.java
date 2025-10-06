@@ -4,6 +4,8 @@ import asterbit.projectmanagementsystem.authentication.model.request.LoginReques
 import asterbit.projectmanagementsystem.authentication.model.request.RegistrationRequest;
 import asterbit.projectmanagementsystem.authentication.model.response.AuthorizationResponse;
 import asterbit.projectmanagementsystem.authentication.service.impl.AuthenticationServiceImpl;
+import asterbit.projectmanagementsystem.management.invitation.model.enums.InvitationStatus;
+import asterbit.projectmanagementsystem.management.invitation.repository.InvitationRepository;
 import asterbit.projectmanagementsystem.management.user.model.entity.User;
 import asterbit.projectmanagementsystem.management.user.model.enums.Role;
 import asterbit.projectmanagementsystem.management.user.repository.UserRepository;
@@ -17,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,6 +33,7 @@ class AuthenticationServiceImplTest {
     @Mock private UserRepository userRepository;
     @Mock private BCryptPasswordEncoder encoder;
     @Mock private JwtGeneratorService jwtGeneratorService;
+    @Mock private InvitationRepository invitationRepository;
 
     @InjectMocks private AuthenticationServiceImpl service;
 
@@ -70,6 +74,7 @@ class AuthenticationServiceImplTest {
         when(encoder.matches("pass", "enc")).thenReturn(true);
         when(jwtGeneratorService.generateToken(any(UUID.class), eq(Role.USER))).thenReturn("jwt");
         when(jwtGeneratorService.getExpirationMinutes()).thenReturn("60 minutes");
+        when(invitationRepository.findAllByUserAndStatus(user, InvitationStatus.PENDING)).thenReturn(Collections.emptyList());
 
         AuthorizationResponse resp = service.login(req);
         assertThat(resp.token()).isEqualTo("jwt");
