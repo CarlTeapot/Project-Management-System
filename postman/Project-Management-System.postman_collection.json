@@ -12,7 +12,7 @@
         "value": "{{jwt_token}}",
         "type": "string"
       }
-+    ]
+    ]
   },
   "variable": [
     {
