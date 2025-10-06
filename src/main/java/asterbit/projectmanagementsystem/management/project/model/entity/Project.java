@@ -22,9 +22,9 @@ public class Project {
     private Long id;
 
     @Column(nullable = false, unique = true, updatable = false)
-    private UUID publicId;
+    private UUID publicId = UUID.randomUUID();
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true, updatable = false)
     private String name;
 
     @Column(length = 1000)

@@ -5,9 +5,9 @@ import asterbit.projectmanagementsystem.management.project.model.request.Project
 import asterbit.projectmanagementsystem.security.model.PrincipalDetails;
 public interface ProjectService {
 
-    void create(ProjectCreationRequest project, PrincipalDetails principal);
+    ProjectDTO create(ProjectCreationRequest project, PrincipalDetails principal);
 
-    ProjectDTO getByPublicId(String publicId);
+    ProjectDTO getByPublicId(String publicId, PrincipalDetails details);
 
     ProjectDTO update(String publicId, ProjectDTO updates, PrincipalDetails principal);
 

@@ -7,7 +7,6 @@ import asterbit.projectmanagementsystem.security.model.PrincipalDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -23,16 +22,16 @@ public class ProjectController {
 
     @PostMapping
     @Operation(summary = "Create project")
-    public ResponseEntity<Void> create(@RequestBody ProjectCreationRequest request, @AuthenticationPrincipal PrincipalDetails principal) {
+    public ResponseEntity<ProjectDTO> create(@RequestBody ProjectCreationRequest request, @AuthenticationPrincipal PrincipalDetails principal) {
 
-        projectService.create(request, principal);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        ProjectDTO projectDTO = projectService.create(request, principal);
+        return ResponseEntity.ok(projectDTO);
     }
 
     @GetMapping("/{publicId}")
     @Operation(summary = "Get project by id")
-    public ResponseEntity<ProjectDTO> get(@PathVariable String publicId) {
-        return ResponseEntity.ok(projectService.getByPublicId(publicId));
+    public ResponseEntity<ProjectDTO> get(@PathVariable String publicId,  @AuthenticationPrincipal PrincipalDetails principal) {
+        return ResponseEntity.ok(projectService.getByPublicId(publicId, principal));
     }
 
     @PutMapping("/{publicId}")
@@ -51,5 +50,3 @@ public class ProjectController {
         return ResponseEntity.ok().build();
     }
 }
-
-

@@ -8,7 +8,7 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface TaskMapper {
 
-    @Mapping(source = "project.id", target = "projectId")
-    @Mapping(source = "assignedUser.id", target = "assignedUserId")
+    @Mapping(source = "project.publicId", target = "projectPublicId")
+    @Mapping(source = "assignedUser.email", target = "assignedUserEmail")
     TaskDTO toDto(Task task);
 }

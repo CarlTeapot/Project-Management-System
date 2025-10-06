@@ -3,17 +3,20 @@ package asterbit.projectmanagementsystem.management.task.controller;
 import asterbit.projectmanagementsystem.management.task.model.dto.TaskDTO;
 import asterbit.projectmanagementsystem.management.task.model.request.TaskCreateRequest;
 import asterbit.projectmanagementsystem.management.task.model.request.TaskUpdateRequest;
+import asterbit.projectmanagementsystem.management.task.model.enums.Status;
+import asterbit.projectmanagementsystem.management.task.model.enums.TaskPriority;
 import asterbit.projectmanagementsystem.management.task.service.TaskService;
 import asterbit.projectmanagementsystem.security.model.PrincipalDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/projects/{publicId}/tasks")
@@ -50,10 +53,13 @@ public class TaskController {
     }
 
     @GetMapping
-    @Operation(summary = "List project tasks (admin or any project member)")
-    public ResponseEntity<List<TaskDTO>> list(@PathVariable String publicId,
+    @Operation(summary = "List project tasks (admin or any project member) with pagination and optional filters")
+    public ResponseEntity<Page<TaskDTO>> list(@PathVariable String publicId,
+                                              @RequestParam(required = false) Status status,
+                                              @RequestParam(required = false) TaskPriority taskPriority,
+                                              @PageableDefault(size = 20) Pageable pageable,
                                               @AuthenticationPrincipal PrincipalDetails principal) {
-        return ResponseEntity.ok(taskService.listByProject(publicId, principal));
+        return ResponseEntity.ok(taskService.listByProject(publicId, status, taskPriority, pageable, principal));
     }
 }
 

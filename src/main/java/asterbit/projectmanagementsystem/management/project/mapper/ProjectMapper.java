@@ -8,6 +8,6 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface ProjectMapper {
 
-    @Mapping(source = "manager.id", target = "managerId")
+    @Mapping(source = "manager.email", target = "managerEmail")
     ProjectDTO toDto(Project project);
 }

@@ -53,7 +53,7 @@ public class JwtGeneratorService {
      * Generates a JWT token for the given username and roles
      *
      * @param publicId the subject of the token
-     * @param role user global role (e.g. admin, user)
+     * @param role     user global role (e.g. admin, user)
      * @return signed JWT token
      */
     public String generateToken(UUID publicId, Role role) {
@@ -70,7 +70,7 @@ public class JwtGeneratorService {
                 .withExpiresAt(expiration)
                 .sign(algorithm);
 
-        log.debug("Generated token for user: {}, expires at: {}", publicId , expiration);
+        log.debug("Generated token for user: {}, expires at: {}", publicId, expiration);
         return token;
     }
 
@@ -112,7 +112,43 @@ public class JwtGeneratorService {
      * Extracts roles from a validated JWT
      */
     public List<Role> extractRoles(DecodedJWT jwt) {
-        return jwt.getClaim(ROLES_CLAIM).asList(Role.class);
+        if (jwt == null) {
+            return java.util.List.of();
+        }
+
+        var claim = jwt.getClaim(ROLES_CLAIM);
+        if (claim == null || claim.isNull()) {
+            return java.util.List.of();
+        }
+
+        // Try array claim first
+        List<String> roleStrings = claim.asList(String.class);
+        if (roleStrings != null) {
+            return roleStrings.stream()
+                    .filter(s -> s != null && !s.isBlank())
+                    .map(String::trim)
+                    .map(String::toUpperCase)
+                    .map(s -> {
+                        try {
+                            return Role.valueOf(s);
+                        } catch (IllegalArgumentException ex) {
+                            return null;
+                        }
+                    })
+                    .filter(java.util.Objects::nonNull)
+                    .toList();
+        }
+
+        // Fallback to single string claim
+        String single = claim.asString();
+        if (single == null || single.isBlank()) {
+            return java.util.List.of();
+        }
+        try {
+            return java.util.List.of(Role.valueOf(single.trim().toUpperCase()));
+        } catch (IllegalArgumentException ex) {
+            return java.util.List.of();
+        }
     }
 
     public String getExpirationMinutes() {

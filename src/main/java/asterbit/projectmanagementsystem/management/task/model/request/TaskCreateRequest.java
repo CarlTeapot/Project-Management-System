@@ -9,7 +9,7 @@ public record TaskCreateRequest(
         String description,
         TaskPriority taskPriority,
         LocalDateTime dueDate,
-        Long assignedUserId
+        String assignedUserEmail
 ) {}
 
 

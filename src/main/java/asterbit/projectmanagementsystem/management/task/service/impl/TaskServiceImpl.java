@@ -1,12 +1,14 @@
 package asterbit.projectmanagementsystem.management.task.service.impl;
 
 import asterbit.projectmanagementsystem.management.project.model.entity.Project;
+import asterbit.projectmanagementsystem.management.project.model.entity.ProjectMember;
 import asterbit.projectmanagementsystem.management.project.model.enums.ProjectRole;
 import asterbit.projectmanagementsystem.management.project.repository.ProjectMemberRepository;
 import asterbit.projectmanagementsystem.management.project.repository.ProjectRepository;
 import asterbit.projectmanagementsystem.management.task.mapper.TaskMapper;
 import asterbit.projectmanagementsystem.management.task.model.dto.TaskDTO;
 import asterbit.projectmanagementsystem.management.task.model.entity.Task;
+import asterbit.projectmanagementsystem.management.task.model.enums.Status;
 import asterbit.projectmanagementsystem.management.task.model.request.TaskCreateRequest;
 import asterbit.projectmanagementsystem.management.task.model.request.TaskUpdateRequest;
 import asterbit.projectmanagementsystem.management.task.repository.TaskRepository;
@@ -16,10 +18,13 @@ import asterbit.projectmanagementsystem.management.user.repository.UserRepositor
 import asterbit.projectmanagementsystem.management.task.service.TaskService;
 import asterbit.projectmanagementsystem.security.model.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
+import asterbit.projectmanagementsystem.management.task.model.enums.TaskPriority;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -53,12 +58,23 @@ public class TaskServiceImpl implements TaskService {
         task.setDescription(request.description());
         task.setTaskPriority(request.taskPriority());
         task.setDueDate(request.dueDate());
-        if (request.assignedUserId() != null) {
-            User assignee = userRepository.findById(request.assignedUserId())
-                    .orElseThrow(() -> new IllegalArgumentException("Assignee not found: " + request.assignedUserId()));
-            task.setAssignedUser(assignee);
+        task.setStatus(Status.TODO);
+        if (request.assignedUserEmail() == null) {
+            throw new IllegalArgumentException("Assigned user email is required");
         }
+        User assignee = userRepository.findByEmail(request.assignedUserEmail())
+                .orElseThrow(() -> new IllegalArgumentException("Assignee not found: " + request.assignedUserEmail()));
+        task.setAssignedUser(assignee);
+
+        ProjectMember member = new ProjectMember();
+        member.setProject(project);
+        member.setUser(assignee);
+        member.setRole(ProjectRole.COLLABORATOR);
+        member.setJoinedDate(LocalDateTime.now());
+
         Task saved = taskRepository.save(task);
+        projectMemberRepository.save(member);
+
         return taskMapper.toDto(saved);
     }
 
@@ -122,7 +138,11 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public List<TaskDTO> listByProject(String projectPublicId, PrincipalDetails principal) {
+    public Page<TaskDTO> listByProject(String projectPublicId,
+                                       Status status,
+                                       TaskPriority taskPriority,
+                                       Pageable pageable,
+                                       PrincipalDetails principal) {
 
         Project project = projectRepository.findByPublicId(UUID.fromString(projectPublicId))
                 .orElseThrow(() -> new IllegalArgumentException("Project not found: " + projectPublicId));
@@ -139,9 +159,19 @@ public class TaskServiceImpl implements TaskService {
             }
 
         }
-        return taskRepository.findByProject(project).stream().map(taskMapper::toDto).toList();
+
+        Page<Task> page;
+        if (status != null && taskPriority != null) {
+            page = taskRepository.findByProjectAndStatusAndTaskPriority(project, status, taskPriority, pageable);
+        } else if (status != null) {
+            page = taskRepository.findByProjectAndStatus(project, status, pageable);
+        } else if (taskPriority != null) {
+            page = taskRepository.findByProjectAndTaskPriority(project, taskPriority, pageable);
+        } else {
+            page = taskRepository.findByProject(project, pageable);
+        }
+
+        return page.map(taskMapper::toDto);
     }
 
 }
-
-

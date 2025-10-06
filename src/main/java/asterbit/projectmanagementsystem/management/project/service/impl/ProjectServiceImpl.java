@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -31,13 +32,14 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional
-    public void create(ProjectCreationRequest projectRequest, PrincipalDetails details) {
+    public ProjectDTO create(ProjectCreationRequest projectRequest, PrincipalDetails details) {
 
         User owner = userRepository.findByPublicId(details.publicId())
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + details.publicId()));
 
         Project project = new Project();
         project.setManager(owner);
+        project.setPublicId(UUID.randomUUID());
         project.setName(projectRequest.name());
         project.setDescription(projectRequest.description());
         project.setCreateDate(LocalDateTime.now());
@@ -51,13 +53,26 @@ public class ProjectServiceImpl implements ProjectService {
         pm.setRole(ProjectRole.MANAGER);
         projectMemberRepository.save(pm);
 
+        return projectMapper.toDto(saved);
     }
 
 
     @Override
-    public ProjectDTO getByPublicId(String publicId) {
+    public ProjectDTO getByPublicId(String publicId, PrincipalDetails details) {
+
         Project project = projectRepository.findByPublicId(java.util.UUID.fromString(publicId))
                 .orElseThrow(() -> new IllegalArgumentException("Project not found: " + publicId));
+
+        User user = userRepository.findByPublicId(details.publicId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + details.publicId()));
+
+
+        Optional<ProjectMember> requester = projectMemberRepository.findByProjectAndUser(project, user);
+
+        if (requester.isEmpty() && details.role().equals(Role.USER)) {
+            throw new SecurityException("Only project members or an admin can see the information about the project.");
+        }
+
         return projectMapper.toDto(project);
     }
 
@@ -83,6 +98,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @Transactional
     public void delete(String projectPublicId, PrincipalDetails details) {
 
         Project project = projectRepository.findByPublicId(UUID.fromString(projectPublicId))
@@ -97,7 +113,7 @@ public class ProjectServiceImpl implements ProjectService {
         if (!project.getManager().getId().equals(requester.getId()) && !details.role().equals(Role.ADMIN)) {
             throw new SecurityException("Only the project manager or an admin can delete the project.");
         }
-
+        projectMemberRepository.deleteAllByProject(project);
         projectRepository.delete(project);
     }
 
