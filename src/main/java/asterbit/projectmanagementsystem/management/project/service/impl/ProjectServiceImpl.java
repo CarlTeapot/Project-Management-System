@@ -1,5 +1,6 @@
 package asterbit.projectmanagementsystem.management.project.service.impl;
 
+import asterbit.projectmanagementsystem.management.project.mapper.ProjectMapper;
 import asterbit.projectmanagementsystem.management.project.model.dto.ProjectDTO;
 import asterbit.projectmanagementsystem.management.project.model.entity.Project;
 import asterbit.projectmanagementsystem.management.project.model.entity.ProjectMember;
@@ -26,6 +27,7 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final ProjectMemberRepository projectMemberRepository;
+    private final ProjectMapper projectMapper;
 
     @Override
     @Transactional
@@ -56,7 +58,7 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectDTO getByPublicId(String publicId) {
         Project project = projectRepository.findByPublicId(java.util.UUID.fromString(publicId))
                 .orElseThrow(() -> new IllegalArgumentException("Project not found: " + publicId));
-        return new ProjectDTO(project.getId(), project.getName(), project.getDescription(), project.getManager().getId());
+        return projectMapper.toDto(project);
     }
 
     @Override
@@ -77,7 +79,7 @@ public class ProjectServiceImpl implements ProjectService {
         project.setUpdateDate(java.time.LocalDateTime.now());
 
         Project saved = projectRepository.save(project);
-        return new ProjectDTO(saved.getId(), saved.getName(), saved.getDescription(), saved.getManager().getId());
+        return projectMapper.toDto(saved);
     }
 
     @Override

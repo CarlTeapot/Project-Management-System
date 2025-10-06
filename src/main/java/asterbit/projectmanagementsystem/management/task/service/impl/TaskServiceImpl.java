@@ -4,6 +4,7 @@ import asterbit.projectmanagementsystem.management.project.model.entity.Project;
 import asterbit.projectmanagementsystem.management.project.model.enums.ProjectRole;
 import asterbit.projectmanagementsystem.management.project.repository.ProjectMemberRepository;
 import asterbit.projectmanagementsystem.management.project.repository.ProjectRepository;
+import asterbit.projectmanagementsystem.management.task.mapper.TaskMapper;
 import asterbit.projectmanagementsystem.management.task.model.dto.TaskDTO;
 import asterbit.projectmanagementsystem.management.task.model.entity.Task;
 import asterbit.projectmanagementsystem.management.task.model.request.TaskCreateRequest;
@@ -29,6 +30,7 @@ public class TaskServiceImpl implements TaskService {
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository projectMemberRepository;
     private final UserRepository userRepository;
+    private final TaskMapper taskMapper;
 
     @Override
     @Transactional
@@ -57,7 +59,7 @@ public class TaskServiceImpl implements TaskService {
             task.setAssignedUser(assignee);
         }
         Task saved = taskRepository.save(task);
-        return toDto(saved);
+        return taskMapper.toDto(saved);
     }
 
     @Override
@@ -93,7 +95,7 @@ public class TaskServiceImpl implements TaskService {
         }
 
         Task saved = taskRepository.save(task);
-        return toDto(saved);
+        return taskMapper.toDto(saved);
     }
 
     @Override
@@ -137,21 +139,9 @@ public class TaskServiceImpl implements TaskService {
             }
 
         }
-        return taskRepository.findByProject(project).stream().map(this::toDto).toList();
+        return taskRepository.findByProject(project).stream().map(taskMapper::toDto).toList();
     }
 
-    private TaskDTO toDto(Task t) {
-        return new TaskDTO(
-                t.getId(),
-                t.getTitle(),
-                t.getDescription(),
-                t.getStatus(),
-                t.getTaskPriority(),
-                t.getDueDate(),
-                t.getProject().getId(),
-                t.getAssignedUser() == null ? null : t.getAssignedUser().getId()
-        );
-    }
 }
 
 
